@@ -30,12 +30,18 @@ class DAO():
         results = []
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT DISTINCT c.constructorId, c.constructorRef, c.name, c.nationality
-            FROM constructors c, results rs, races rc
+            SELECT DISTINCT c.constructorId AS constructorId, 
+                            c.constructorRef AS constructorRef, 
+                            c.name AS name,
+                            c.nationality AS nationality,
+                            MIN(d.dob) AS oldest_driver_dob
+            FROM constructors c, results rs, races rc, drivers d
             WHERE c.constructorId = rs.constructorId 
                 AND rs.position IS NOT NULL 
                 AND rs.raceId = rc.raceId 
-                AND rc.year BETWEEN %s AND %s 
+                AND d.driverId = rs.driverId
+                AND rc.year BETWEEN %s AND %s
+            GROUP BY c.constructorId
         """
 
         cursor.execute(query,(yearsDa, yearsA))
@@ -75,5 +81,8 @@ class DAO():
         cursor.close()
         conn.close()
         return results
+
+
+
 
 
